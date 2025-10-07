@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TASL CRMPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Stile per la scrollbar per un look più pulito */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
+        .view { display: none; }
+        .view.active { display: block; }
+
+        .filter-btn.active, .dashboard-view-btn.active {
+            background-color: #0284c7;
+            color: white;
+        }
+        
+        /* Stili per FullCalendar */
+        #calendar-view .fc-button {
+            background-color: #0ea5e9 !important;
+            border-color: #0ea5e9 !important;
+            color: white !important;
+            box-shadow: none !important;
+            font-size: 0.875rem !important;
+            padding: 0.5rem 1rem !important;
+        }
+        #calendar-view .fc-button:hover {
+            background-color: #0284c7 !important;
+        }
+        #calendar-view .fc-toolbar-title {
+            font-size: 1.25rem !important;
+            font-weight: 700 !important;
+        }
+        #calendar-view .fc-daygrid-day.fc-day-today {
+            background-color: #f0f9ff !important;
+        }
+
+        /* Stili per Notifiche */
+        #notification-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        .notification {
+            animation: fadeInOut 4s ease-in-out forwards;
+        }
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; transform: translateY(20px); }
+            10%, 90% { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+    <div id="app" class="min-h-screen flex flex-col md:flex-row">
+        <!-- Sidebar di navigazione -->
+        <nav class="bg-white md:w-64 p-4 md:p-6 shadow-lg flex flex-col">
+            <div class="flex items-center gap-3 mb-8">
+                <!-- 
+                    MODIFICA QUI IL TUO LOGO:
+                    Per usare un logo dalla stessa cartella del file crm.html, cambia src in:
+                    src="nome_del_tuo_logo.png" 
+
+                    Oppure, per usare un logo da internet, incolla qui il suo indirizzo.
+                -->
+                <img src="C:\Users\sgub8\Desktop\TASL POLO 128 Giusmarin\CRMTASL\loghi\icon tasl.png" alt="Logo TASL CRMPro" class="h-10 w-10 rounded-lg">
+                <h1 class="text-xl font-bold text-slate-800">TASL CRMPro</h1>
+            </div>
+            <ul class="flex-grow">
+                <li>
+                    <a href="#" id="nav-dashboard" class="nav-link flex items-center gap-3 px-4 py-3 text-slate-600 font-medium rounded-lg hover:bg-sky-100 hover:text-sky-700 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="nav-clients" class="nav-link flex items-center gap-3 px-4 py-3 text-slate-600 font-medium rounded-lg hover:bg-sky-100 hover:text-sky-700 transition-colors mt-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" /></svg>
+                        Clienti
+                    </a>
+                </li>
+                 <li class="border-t mt-4 pt-4">
+                    <a href="#" id="export-data-btn" class="nav-link flex items-center gap-3 px-4 py-3 text-slate-600 font-medium rounded-lg hover:bg-sky-100 hover:text-sky-700 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Esporta Dati
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="import-data-btn" class="nav-link flex items-center gap-3 px-4 py-3 text-slate-600 font-medium rounded-lg hover:bg-sky-100 hover:text-sky-700 transition-colors mt-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                        Importa Dati
+                    </a>
+                    <input type="file" id="import-file-input" class="hidden" accept=".json">
+                </li>
+            </ul>
+             <div class="pt-8">
+                <button id="add-client-btn-nav" class="w-full bg-sky-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-sky-700 transition-all flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                    Aggiungi Cliente
+                </button>
+                <footer class="text-center text-xs text-slate-400 mt-4">
+                    Powered by Gius.Marin
+                </footer>
+            </div>
+        </nav>
+
+        <!-- Contenuto Principale -->
+        <main class="flex-1 p-4 md:p-8 overflow-auto">
+            
+            <!-- Vista Dashboard -->
+            <div id="dashboard-view" class="view active">
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">Dashboard</h2>
+                <div class="flex items-center gap-2 mb-6 border-b pb-4">
+                    <button id="btn-agenda-view" class="dashboard-view-btn text-sm font-medium py-2 px-4 rounded-lg transition-colors bg-slate-200 hover:bg-slate-300">Agenda</button>
+                    <button id="btn-calendar-view" class="dashboard-view-btn text-sm font-medium py-2 px-4 rounded-lg transition-colors bg-slate-200 hover:bg-slate-300">Calendario</button>
+                </div>
+                
+                <div id="agenda-view">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 rounded-xl shadow-md">
+                            <h3 class="text-xl font-bold text-red-600 mb-4">Scadenze di Oggi</h3>
+                            <div id="today-deadlines" class="space-y-3"></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-md">
+                            <h3 class="text-xl font-bold text-amber-600 mb-4">Scadenze della Settimana</h3>
+                            <div id="week-deadlines" class="space-y-3"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="calendar-view" class="bg-white p-4 md:p-6 rounded-xl shadow-md" style="display: none;">
+                    <!-- Il calendario verrà renderizzato qui -->
+                </div>
+            </div>
+
+            <!-- Vista Elenco Clienti -->
+            <div id="clients-view" class="view">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
+                    <h2 class="text-3xl font-bold text-slate-800">Elenco Clienti</h2>
+                    <button id="add-client-btn-list" class="bg-sky-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-sky-700 transition-all flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                        Nuovo Cliente
+                    </button>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                     <div class="relative mb-4">
+                        <input type="text" id="search-input" placeholder="Cerca per nome o categoria..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:ring-sky-500 focus:border-sky-500">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <button id="clear-search-btn" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden">
+                            <svg class="h-5 w-5 text-slate-400 hover:text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="client-filters" class="flex flex-wrap gap-2 mb-4 border-b pb-4">
+                        <!-- Filtri categoria verranno inseriti qui -->
+                    </div>
+                    <div id="client-list" class="divide-y divide-slate-200">
+                        <!-- Elenco clienti inserito dinamicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista Dettaglio Cliente -->
+            <div id="client-detail-view" class="view">
+                <!-- Dettagli cliente inseriti dinamicamente -->
+            </div>
+
+            <!-- Vista Aggiungi/Modifica Cliente -->
+            <div id="client-form-view" class="view">
+                 <h2 id="form-title" class="text-3xl font-bold text-slate-800 mb-6">Aggiungi Nuovo Cliente</h2>
+                 <div class="bg-white p-8 rounded-xl shadow-md max-w-4xl mx-auto">
+                    <form id="client-form">
+                        <input type="hidden" id="client-id">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="client-name" class="block text-sm font-medium text-slate-600 mb-1">Nome Cliente</label>
+                                <input type="text" id="client-name" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500" required>
+                            </div>
+                            <div>
+                                <label for="client-category" class="block text-sm font-medium text-slate-600 mb-1">Macro Area / Categoria</label>
+                                <input type="text" id="client-category" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500" placeholder="Es: ecampus, eipass">
+                            </div>
+                            <div>
+                                <label for="client-referent" class="block text-sm font-medium text-slate-600 mb-1">Referente</label>
+                                <input type="text" id="client-referent" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500">
+                            </div>
+                            <div>
+                                <label for="client-phone" class="block text-sm font-medium text-slate-600 mb-1">Telefono</label>
+                                <input type="tel" id="client-phone" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500">
+                            </div>
+                             <div class="md:col-span-2">
+                                <label for="client-email" class="block text-sm font-medium text-slate-600 mb-1">Email</label>
+                                <input type="email" id="client-email" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500">
+                            </div>
+                             <div>
+                                <label for="contract-start" class="block text-sm font-medium text-slate-600 mb-1">Data Inizio Contratto</label>
+                                <input type="date" id="contract-start" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500">
+                            </div>
+                            <div>
+                                <label for="contract-end" class="block text-sm font-medium text-slate-600 mb-1">Data Scadenza Contratto</label>
+                                <input type="date" id="contract-end" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500">
+                            </div>
+                             <div class="md:col-span-2">
+                                <label for="contract-description" class="block text-sm font-medium text-slate-600 mb-1">Descrizione / Note Contratto</label>
+                                <textarea id="contract-description" rows="4" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500"></textarea>
+                            </div>
+                        </div>
+                        <div class="mt-8 flex justify-end gap-4">
+                            <button type="button" id="cancel-form-btn" class="bg-slate-200 text-slate-700 font-bold py-2 px-6 rounded-lg hover:bg-slate-300 transition-colors">Annulla</button>
+                            <button type="submit" class="bg-sky-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-sky-700 transition-colors">Salva Cliente</button>
+                        </div>
+                    </form>
+                 </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modale per aggiungere scadenze -->
+    <div id="deadline-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full">
+            <h3 id="modal-title" class="text-xl font-bold mb-6"></h3>
+            <form id="deadline-form">
+                <input type="hidden" id="modal-client-id">
+                <input type="hidden" id="modal-type">
+                <div id="title-field-container" class="mt-4 hidden">
+                     <label for="deadline-title" class="block text-sm font-medium text-slate-600 mb-1">Titolo Scadenza</label>
+                    <input type="text" id="deadline-title" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500">
+                </div>
+                <div>
+                    <label for="deadline-date" class="block text-sm font-medium text-slate-600 mb-1">Data Scadenza</label>
+                    <input type="date" id="deadline-date" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500" required>
+                </div>
+                <div id="amount-field-container" class="mt-4 hidden">
+                     <label for="deadline-amount" class="block text-sm font-medium text-slate-600 mb-1">Importo (€)</label>
+                    <input type="number" id="deadline-amount" step="0.01" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500">
+                </div>
+                <div class="mt-8 flex justify-end gap-4">
+                    <button type="button" id="cancel-modal-btn" class="bg-slate-200 text-slate-700 font-bold py-2 px-5 rounded-lg hover:bg-slate-300 transition-colors">Annulla</button>
+                    <button type="submit" class="bg-sky-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-sky-700 transition-colors">Aggiungi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modale di Conferma -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full">
+            <h3 id="confirm-modal-title" class="text-xl font-bold mb-4">Sei sicuro?</h3>
+            <p id="confirm-modal-text" class="text-slate-600 mb-6"></p>
+            <div class="flex justify-end gap-4">
+                <button type="button" id="confirm-cancel-btn" class="bg-slate-200 text-slate-700 font-bold py-2 px-5 rounded-lg hover:bg-slate-300 transition-colors">Annulla</button>
+                <button type="button" id="confirm-ok-btn" class="bg-red-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-red-700 transition-colors">Conferma</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenitore Notifiche -->
+    <div id="notification-container"></div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // ----------------------------------------------------------------
+    // STATO E GESTIONE DATI (LOGICA)
+    // ----------------------------------------------------------------
+
+    let state = {
+        clients: [],
+        clientFilter: 'all',
+        searchTerm: '',
+        dashboardView: 'agenda' // 'agenda' o 'calendar'
+    };
+    let calendar = null; // Istanza di FullCalendar
+    
+    const DB_NAME = 'crm_app_data_v2';
+
+    // Funzione per caricare i dati dal localStorage
+    function loadData() {
+        const data = localStorage.getItem(DB_NAME);
+        if (data) {
+            state.clients = JSON.parse(data);
+        }
+    }
+
+    // Funzione per salvare i dati nel localStorage
+    function saveData() {
+        localStorage.setItem(DB_NAME, JSON.stringify(state.clients));
+    }
+    
+    // Funzioni CRUD per i clienti
+    function addClient(clientData) {
+        const newClient = {
+            id: `client_${Date.now()}`,
+            payments: [],
+            followUps: [],
+            customDeadlines: [],
+            tutoringDeadlines: [],
+            ...clientData
+        };
+        state.clients.push(newClient);
+        saveData();
+        return newClient;
+    }
+    
+    function updateClient(clientId, updatedData) {
+        const clientIndex = state.clients.findIndex(c => c.id === clientId);
+        if (clientIndex > -1) {
+            state.clients[clientIndex] = { ...state.clients[clientIndex], ...updatedData };
+            saveData();
+        }
+    }
+
+    function getClient(clientId) {
+        return state.clients.find(c => c.id === clientId);
+    }
+    
+    function deleteClient(clientId) {
+        state.clients = state.clients.filter(c => c.id !== clientId);
+        saveData();
+    }
+
+    // Funzioni per aggiungere/rimuovere scadenze specifiche
+    function addDeadlineToClient(clientId, type, data) {
+        const client = getClient(clientId);
+        if (client) {
+            const deadline = { id: `${type}_${Date.now()}`, ...data };
+            if (type === 'payment') client.payments.push(deadline);
+            else if (type === 'followUp') client.followUps.push(deadline);
+            else if (type === 'custom') client.customDeadlines.push(deadline);
+            else if (type === 'tutoring') {
+                if (!client.tutoringDeadlines) client.tutoringDeadlines = [];
+                deadline.status = 'pending'; // 'pending', 'paid', 'unpaid'
+                client.tutoringDeadlines.push(deadline);
+            }
+            saveData();
+        }
+    }
+
+    function removeDeadlineFromClient(clientId, type, deadlineId) {
+        const client = getClient(clientId);
+        if (client) {
+            if (type === 'payment') client.payments = client.payments.filter(p => p.id !== deadlineId);
+            else if (type === 'followUp') client.followUps = client.followUps.filter(f => f.id !== deadlineId);
+            else if (type === 'custom') client.customDeadlines = client.customDeadlines.filter(d => d.id !== deadlineId);
+            else if (type === 'tutoring') client.tutoringDeadlines = client.tutoringDeadlines.filter(t => t.id !== deadlineId);
+            saveData();
+        }
+    }
+    
+    function updateTutoringDeadlineStatus(clientId, deadlineId, newStatus) {
+        const client = getClient(clientId);
+        if (client && client.tutoringDeadlines) {
+            const deadlineIndex = client.tutoringDeadlines.findIndex(d => d.id === deadlineId);
+            if (deadlineIndex > -1) {
+                client.tutoringDeadlines[deadlineIndex].status = newStatus;
+                saveData();
+            }
+        }
+    }
+    
+    function getAllDeadlines() {
+        const allDeadlines = [];
+        state.clients.forEach(client => {
+            if (client.contractEnd) allDeadlines.push({clientName: client.name, clientId: client.id, date: client.contractEnd, type: 'Scadenza Contratto', typeClass: 'bg-red-100 text-red-800'});
+            client.payments.forEach(p => allDeadlines.push({clientName: client.name, clientId: client.id, date: p.date, type: `Pagamento Rata (€ ${p.amount || 'N/D'})`, typeClass: 'bg-green-100 text-green-800'}));
+            client.followUps.forEach(f => allDeadlines.push({clientName: client.name, clientId: client.id, date: f.date, type: 'Ricontatto Cliente', typeClass: 'bg-blue-100 text-blue-800'}));
+            client.customDeadlines.forEach(d => allDeadlines.push({clientName: client.name, clientId: client.id, date: d.date, type: d.title, typeClass: 'bg-purple-100 text-purple-800'}));
+            if (client.tutoringDeadlines) {
+                 client.tutoringDeadlines.forEach(t => allDeadlines.push({clientName: client.name, clientId: client.id, date: t.date, type: `Tutoraggio: ${t.title}`, typeClass: 'bg-orange-100 text-orange-800'}));
+            }
+        });
+        return allDeadlines.sort((a, b) => new Date(a.date) - new Date(b.date));
+    }
+
+
+    // ----------------------------------------------------------------
+    // MANIPOLAZIONE DEL DOM (UI)
+    // ----------------------------------------------------------------
+
+    const views = document.querySelectorAll('.view');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const todayContainer = document.getElementById('today-deadlines');
+    const weekContainer = document.getElementById('week-deadlines');
+    const clientListContainer = document.getElementById('client-list');
+    const clientFiltersContainer = document.getElementById('client-filters');
+    const clientDetailContainer = document.getElementById('client-detail-view');
+    const clientForm = document.getElementById('client-form');
+    const deadlineModal = document.getElementById('deadline-modal');
+    const deadlineForm = document.getElementById('deadline-form');
+    const confirmModal = document.getElementById('confirm-modal');
+
+    function navigateTo(viewId) {
+        views.forEach(v => v.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+        navLinks.forEach(link => {
+            link.classList.remove('bg-sky-100', 'text-sky-700');
+            if(link.id === `nav-${viewId.split('-')[0]}`) {
+                link.classList.add('bg-sky-100', 'text-sky-700');
+            }
+        });
+    }
+
+    function renderAll() {
+        renderDashboard();
+        renderClientFilters();
+        renderClientList();
+        // Se siamo in una vista dettaglio, la aggiorniamo
+        const activeDetail = document.querySelector('#client-detail-view.active');
+        if (activeDetail && activeDetail.dataset.clientId) {
+            renderClientDetail(activeDetail.dataset.clientId);
+        }
+    }
+
+    function showNotification(message, isError = false) {
+        const container = document.getElementById('notification-container');
+        const bgColor = isError ? 'bg-red-500' : 'bg-green-500';
+        const notification = document.createElement('div');
+        notification.className = `notification text-white font-bold py-2 px-4 rounded-lg shadow-lg mb-2 ${bgColor}`;
+        notification.textContent = message;
+        container.appendChild(notification);
+        setTimeout(() => {
+            notification.remove();
+        }, 4000);
+    }
+    
+    function showConfirmModal(text, onConfirm) {
+        document.getElementById('confirm-modal-text').textContent = text;
+        const confirmBtn = document.getElementById('confirm-ok-btn');
+        const cancelBtn = document.getElementById('confirm-cancel-btn');
+        
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+        newConfirmBtn.addEventListener('click', () => {
+            onConfirm();
+            hideConfirmModal();
+        });
+        
+        cancelBtn.onclick = hideConfirmModal;
+
+        confirmModal.classList.remove('hidden');
+        confirmModal.classList.add('flex');
+    }
+
+    function hideConfirmModal() {
+        confirmModal.classList.add('hidden');
+        confirmModal.classList.remove('flex');
+    }
+
+    function renderDashboard() {
+        document.getElementById('btn-agenda-view').classList.toggle('active', state.dashboardView === 'agenda');
+        document.getElementById('btn-calendar-view').classList.toggle('active', state.dashboardView === 'calendar');
+
+        if (state.dashboardView === 'agenda') {
+            document.getElementById('agenda-view').style.display = 'block';
+            document.getElementById('calendar-view').style.display = 'none';
+            renderAgendaView();
+        } else {
+            document.getElementById('agenda-view').style.display = 'none';
+            document.getElementById('calendar-view').style.display = 'block';
+            renderCalendarView();
+        }
+    }
+
+    function renderAgendaView() {
+        const deadlines = getAllDeadlines();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const nextWeek = new Date();
+        nextWeek.setDate(today.getDate() + 7);
+        nextWeek.setHours(23, 59, 59, 999);
+
+        todayContainer.innerHTML = '';
+        weekContainer.innerHTML = '';
+        let todayCount = 0;
+        let weekCount = 0;
+
+        deadlines.forEach(d => {
+            const deadlineDate = new Date(d.date);
+            deadlineDate.setHours(12,0,0,0);
+            const deadlineHTML = `
+                <div class="border border-slate-200 p-3 rounded-lg flex justify-between items-center cursor-pointer hover:bg-slate-50" onclick="app.viewClient('${d.clientId}')">
+                    <div>
+                        <p class="font-semibold text-slate-800">${d.clientName}</p>
+                        <p class="text-sm text-slate-500">${new Date(d.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric'})}</p>
+                    </div>
+                    <span class="text-xs font-bold px-2 py-1 rounded-full ${d.typeClass}">${d.type}</span>
+                </div>
+            `;
+            if (deadlineDate.getTime() === today.getTime()) {
+                todayContainer.innerHTML += deadlineHTML;
+                todayCount++;
+            } else if (deadlineDate > today && deadlineDate <= nextWeek) {
+                weekContainer.innerHTML += deadlineHTML;
+                weekCount++;
+            }
+        });
+
+        if (todayCount === 0) todayContainer.innerHTML = '<p class="text-slate-500 text-center py-4">Nessuna scadenza per oggi.</p>';
+        if (weekCount === 0) weekContainer.innerHTML = '<p class="text-slate-500 text-center py-4">Nessuna scadenza imminente.</p>';
+    }
+
+    function renderCalendarView() {
+        const calendarEl = document.getElementById('calendar-view');
+        const deadlines = getAllDeadlines();
+        const events = deadlines.map(d => {
+            const colorMap = {
+                'bg-red-100 text-red-800': '#ef4444',
+                'bg-green-100 text-green-800': '#22c55e',
+                'bg-blue-100 text-blue-800': '#3b82f6',
+                'bg-purple-100 text-purple-800': '#a855f7',
+                'bg-orange-100 text-orange-800': '#f97316'
+            };
+            return {
+                title: `${d.clientName} - ${d.type}`,
+                start: d.date,
+                extendedProps: { clientId: d.clientId },
+                backgroundColor: colorMap[d.typeClass] || '#64748b',
+                borderColor: colorMap[d.typeClass] || '#64748b',
+                textColor: 'white'
+            };
+        });
+
+        if (calendar) {
+            calendar.destroy();
+        }
+
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            locale: 'it',
+            events: events,
+            eventClick: function(info) {
+                const clientId = info.event.extendedProps.clientId;
+                if (clientId) {
+                    app.viewClient(clientId);
+                }
+            }
+        });
+        calendar.render();
+    }
+
+    function renderClientFilters() {
+        const categories = [...new Set(state.clients.map(c => c.category).filter(Boolean))];
+        clientFiltersContainer.innerHTML = `<button class="filter-btn text-sm font-medium py-1 px-3 rounded-full transition-colors ${state.clientFilter === 'all' ? 'active' : 'bg-slate-200 hover:bg-slate-300'}" onclick="app.filterClients('all')">Tutti</button>`;
+        categories.forEach(cat => {
+            clientFiltersContainer.innerHTML += `<button class="filter-btn text-sm font-medium py-1 px-3 rounded-full transition-colors ${state.clientFilter === cat ? 'active' : 'bg-slate-200 hover:bg-slate-300'}" onclick="app.filterClients('${cat}')">${cat}</button>`;
+        });
+    }
+
+    function renderClientList() {
+        clientListContainer.innerHTML = '';
+        
+        let clientsToDisplay = state.clients;
+
+        // Apply category filter
+        if (state.clientFilter !== 'all') {
+            clientsToDisplay = clientsToDisplay.filter(c => c.category === state.clientFilter);
+        }
+
+        // Apply search term filter
+        if (state.searchTerm) {
+            const searchTerm = state.searchTerm.toLowerCase();
+            clientsToDisplay = clientsToDisplay.filter(client =>
+                (client.name && client.name.toLowerCase().includes(searchTerm)) ||
+                (client.category && client.category.toLowerCase().includes(searchTerm))
+            );
+        }
+        
+        document.getElementById('clear-search-btn').classList.toggle('hidden', !state.searchTerm);
+
+        if (clientsToDisplay.length === 0) {
+            clientListContainer.innerHTML = '<p class="text-slate-500 text-center py-8">Nessun cliente trovato.</p>';
+            return;
+        }
+
+        clientsToDisplay.forEach(client => {
+            clientListContainer.innerHTML += `
+                <div class="flex items-center justify-between py-4 cursor-pointer hover:bg-slate-50 px-2" onclick="app.viewClient('${client.id}')">
+                    <div>
+                        <p class="font-semibold text-sky-700">${client.name}</p>
+                        <p class="text-sm text-slate-500">${client.email || 'Nessuna email'} &middot; ${client.phone || 'Nessun telefono'}</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        ${client.category ? `<span class="text-xs font-bold px-2 py-1 rounded-full bg-slate-200 text-slate-600">${client.category}</span>` : ''}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function renderClientDetail(clientId) {
+        const client = getClient(clientId);
+        if (!client) { navigateTo('clients-view'); return; }
+
+        clientDetailContainer.dataset.clientId = clientId; // Keep track of current client
+        
+        const detailHTML = `
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-800">${client.name}</h2>
+                    <p class="text-slate-500">${client.referent || ''}</p>
+                    ${client.category ? `<span class="mt-2 inline-block text-xs font-bold px-2 py-1 rounded-full bg-slate-200 text-slate-600">${client.category}</span>` : ''}
+                </div>
+                <div class="flex gap-2">
+                    <button class="bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg hover:bg-slate-300" onclick="app.editClient('${client.id}')">Modifica</button>
+                    <button class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600" onclick="app.confirmDeleteClient('${client.id}')">Elimina</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Info Contatto e Contratto -->
+                <div class="bg-white p-6 rounded-xl shadow-md lg:col-span-1 space-y-4">
+                    <div><h3 class="font-bold text-lg border-b pb-2">Info Contatto</h3><p class="text-sm text-slate-500 mt-2">Email</p><p>${client.email||'N/D'}</p><p class="text-sm text-slate-500 mt-2">Telefono</p><p>${client.phone||'N/D'}</p></div>
+                    <div><h3 class="font-bold text-lg border-b pb-2">Info Contratto</h3><p class="text-sm text-slate-500 mt-2">Inizio</p><p>${client.contractStart?new Date(client.contractStart).toLocaleDateString('it-IT'):'N/D'}</p><p class="text-sm text-slate-500 mt-2">Scadenza</p><p class="font-bold">${client.contractEnd?new Date(client.contractEnd).toLocaleDateString('it-IT'):'N/D'}</p></div>
+                </div>
+                <!-- Note e Scadenze -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-white p-6 rounded-xl shadow-md"><h3 class="font-bold text-lg mb-2">Note Contratto</h3><p class="text-slate-600 whitespace-pre-wrap">${client.contractDescription||'Nessuna nota.'}</p></div>
+                    ${renderTutoringDeadlineSection('Scadenze Tutoraggio', 'tutoring', client.tutoringDeadlines || [], client.id)}
+                    ${renderDeadlineSection('Pagamenti', 'payment', client.payments, client.id)}
+                    ${renderDeadlineSection('Ricontatti', 'followUp', client.followUps, client.id)}
+                    ${renderDeadlineSection('Altre Scadenze', 'custom', client.customDeadlines, client.id)}
+                </div>
+            </div>
+        `;
+        clientDetailContainer.innerHTML = detailHTML;
+        navigateTo('client-detail-view');
+    }
+
+    function renderDeadlineSection(title, type, deadlines, clientId) {
+        return `
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg">${title}</h3>
+                    <button class="bg-sky-100 text-sky-700 font-bold text-sm py-1 px-3 rounded-full hover:bg-sky-200" onclick="app.openDeadlineModal('${clientId}', '${type}')">+ Aggiungi</button>
+                </div>
+                <div class="space-y-2">
+                    ${deadlines.length > 0 ? deadlines.map(d => `
+                        <div class="flex justify-between items-center bg-slate-50 p-3 rounded-lg">
+                            <div>
+                                ${d.title ? `<p class="font-semibold text-purple-800">${d.title}</p>` : ''}
+                                <p>Data: <span class="font-semibold">${new Date(d.date).toLocaleDateString('it-IT')}</span></p>
+                                ${d.amount ? `<p>Importo: <span class="font-semibold">€ ${d.amount}</span></p>`: ''}
+                            </div>
+                            <button class="text-slate-400 hover:text-red-500" onclick="app.removeDeadline('${clientId}', '${type}', '${d.id}')"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button>
+                        </div>
+                    `).join('') : `<p class="text-slate-500 text-sm">Nessuna scadenza programmata.</p>`}
+                </div>
+            </div>`;
+    }
+
+    function renderTutoringDeadlineSection(title, type, deadlines, clientId) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const statusBadges = {
+            pending: '<span class="text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full bg-yellow-100 text-yellow-800">In Attesa</span>',
+            paid: '<span class="text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full bg-green-100 text-green-800">Pagata</span>',
+            unpaid: '<span class="text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full bg-red-100 text-red-800">Non Pagata</span>'
+        };
+
+        return `
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg">${title}</h3>
+                    <button class="bg-sky-100 text-sky-700 font-bold text-sm py-1 px-3 rounded-full hover:bg-sky-200" onclick="app.openDeadlineModal('${clientId}', '${type}')">+ Aggiungi</button>
+                </div>
+                <div class="space-y-3">
+                    ${deadlines.length > 0 ? deadlines.map(d => {
+                        const deadlineDate = new Date(d.date);
+                        const isPast = deadlineDate < today;
+                        
+                        return `
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center bg-slate-50 p-3 rounded-lg">
+                            <div>
+                                <div class="flex items-center">
+                                    ${statusBadges[d.status]}
+                                    <p class="font-semibold text-gray-800">${d.title}</p>
+                                </div>
+                                <p class="text-sm mt-1">Data: <span class="font-semibold">${new Date(d.date).toLocaleDateString('it-IT')}</span></p>
+                            </div>
+                            <div class="flex gap-2 mt-2 sm:mt-0 items-center">
+                                ${isPast && d.status === 'pending' ? `
+                                    <button class="text-xs font-bold text-white bg-green-500 hover:bg-green-600 rounded-full px-3 py-1" onclick="app.updateDeadlineStatus('${clientId}', '${d.id}', 'paid')">Pagata</button>
+                                    <button class="text-xs font-bold text-white bg-red-500 hover:bg-red-600 rounded-full px-3 py-1" onclick="app.updateDeadlineStatus('${clientId}', '${d.id}', 'unpaid')">Non Pagata</button>
+                                ` : ''}
+                                <button class="text-slate-400 hover:text-red-500" onclick="app.removeDeadline('${clientId}', '${type}', '${d.id}')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                                </button>
+                            </div>
+                        </div>
+                    `}).join('') : `<p class="text-slate-500 text-sm">Nessuna scadenza di tutoraggio programmata.</p>`}
+                </div>
+            </div>`;
+    }
+    
+    function renderClientForm(client = null) {
+        document.getElementById('form-title').textContent = client ? 'Modifica Cliente' : 'Aggiungi Nuovo Cliente';
+        clientForm.reset();
+        document.getElementById('client-id').value = client?.id || '';
+        document.getElementById('client-name').value = client?.name || '';
+        document.getElementById('client-category').value = client?.category || '';
+        document.getElementById('client-referent').value = client?.referent || '';
+        document.getElementById('client-email').value = client?.email || '';
+        document.getElementById('client-phone').value = client?.phone || '';
+        document.getElementById('contract-start').value = client?.contractStart || '';
+        document.getElementById('contract-end').value = client?.contractEnd || '';
+        document.getElementById('contract-description').value = client?.contractDescription || '';
+        navigateTo('client-form-view');
+    }
+    
+    function showDeadlineModal(clientId, type) {
+        deadlineForm.reset();
+        document.getElementById('modal-client-id').value = clientId;
+        document.getElementById('modal-type').value = type;
+        const amountContainer = document.getElementById('amount-field-container');
+        const titleContainer = document.getElementById('title-field-container');
+        
+        amountContainer.classList.add('hidden');
+        titleContainer.classList.add('hidden');
+
+        if (type === 'payment') {
+            document.getElementById('modal-title').textContent = 'Aggiungi Scadenza Pagamento';
+            amountContainer.classList.remove('hidden');
+        } else if (type === 'followUp') {
+            document.getElementById('modal-title').textContent = 'Aggiungi Data Ricontatto';
+        } else if (type === 'custom') {
+            document.getElementById('modal-title').textContent = 'Aggiungi Scadenza Personalizzata';
+            titleContainer.classList.remove('hidden');
+        } else if (type === 'tutoring') {
+            document.getElementById('modal-title').textContent = 'Aggiungi Scadenza Tutoraggio';
+            titleContainer.classList.remove('hidden');
+        }
+        deadlineModal.classList.remove('hidden');
+        deadlineModal.classList.add('flex');
+    }
+    
+    function hideDeadlineModal() {
+        deadlineModal.classList.add('hidden');
+        deadlineModal.classList.remove('flex');
+    }
+
+    // ----------------------------------------------------------------
+    // EVENT LISTENERS
+    // ----------------------------------------------------------------
+
+    document.getElementById('nav-dashboard').addEventListener('click', (e) => { e.preventDefault(); navigateTo('dashboard-view'); renderDashboard(); });
+    document.getElementById('nav-clients').addEventListener('click', (e) => { e.preventDefault(); navigateTo('clients-view'); renderClientFilters(); renderClientList(); });
+    document.getElementById('add-client-btn-nav').addEventListener('click', () => renderClientForm());
+    document.getElementById('add-client-btn-list').addEventListener('click', () => renderClientForm());
+
+    document.getElementById('export-data-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        if(state.clients.length === 0) {
+            showNotification('Nessun dato da esportare.', true);
+            return;
+        }
+        const dataStr = JSON.stringify(state.clients, null, 2);
+        const dataBlob = new Blob([dataStr], {type: "application/json"});
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `crm_backup_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showNotification('Dati esportati con successo!');
+    });
+    
+    document.getElementById('import-data-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('import-file-input').click();
+    });
+
+    document.getElementById('import-file-input').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const importedData = JSON.parse(event.target.result);
+                // Semplice validazione per vedere se sembra un array di clienti
+                if (Array.isArray(importedData)) {
+                     showConfirmModal(
+                        `Stai per sovrascrivere tutti i dati attuali con ${importedData.length} record dal file. Vuoi continuare?`,
+                        () => {
+                            state.clients = importedData;
+                            saveData();
+                            showNotification('Dati importati con successo!');
+                            renderAll();
+                        }
+                    );
+                } else {
+                    throw new Error('Il file non sembra contenere dati validi.');
+                }
+            } catch (error) {
+                showNotification(`Errore nell'importazione: ${error.message}`, true);
+            } finally {
+                // Resetta l'input per permettere di caricare lo stesso file di nuovo
+                e.target.value = '';
+            }
+        };
+        reader.readAsText(file);
+    });
+
+    // Search functionality
+    document.getElementById('search-input').addEventListener('input', (e) => {
+        state.searchTerm = e.target.value;
+        renderClientList();
+    });
+
+    document.getElementById('clear-search-btn').addEventListener('click', () => {
+        state.searchTerm = '';
+        document.getElementById('search-input').value = '';
+        renderClientList();
+    });
+
+    // Switch viste dashboard
+    document.getElementById('btn-agenda-view').addEventListener('click', () => {
+        state.dashboardView = 'agenda';
+        renderDashboard();
+    });
+     document.getElementById('btn-calendar-view').addEventListener('click', () => {
+        state.dashboardView = 'calendar';
+        renderDashboard();
+    });
+
+    document.getElementById('contract-start').addEventListener('change', (e) => {
+        if (e.target.value) {
+            const endDate = new Date(e.target.value);
+            endDate.setFullYear(endDate.getFullYear() + 1);
+            document.getElementById('contract-end').value = endDate.toISOString().split('T')[0];
+        }
+    });
+
+    clientForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const clientId = document.getElementById('client-id').value;
+        const clientData = {
+            name: document.getElementById('client-name').value,
+            category: document.getElementById('client-category').value,
+            referent: document.getElementById('client-referent').value,
+            email: document.getElementById('client-email').value,
+            phone: document.getElementById('client-phone').value,
+            contractStart: document.getElementById('contract-start').value,
+            contractEnd: document.getElementById('contract-end').value,
+            contractDescription: document.getElementById('contract-description').value,
+        };
+        
+        if (clientId) {
+            updateClient(clientId, clientData);
+            showNotification('Cliente aggiornato con successo!');
+            renderClientDetail(clientId);
+        } else {
+            const newClient = addClient(clientData);
+            showNotification('Cliente creato! Ora puoi aggiungere le scadenze.');
+            renderClientDetail(newClient.id);
+        }
+    });
+
+    document.getElementById('cancel-form-btn').addEventListener('click', () => { 
+        const clientId = document.getElementById('client-id').value;
+        if(clientId) {
+            renderClientDetail(clientId);
+        } else {
+            navigateTo('clients-view');
+        }
+    });
+
+    deadlineForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const clientId = document.getElementById('modal-client-id').value;
+        const type = document.getElementById('modal-type').value;
+        const data = { date: document.getElementById('deadline-date').value };
+        
+        if (type === 'payment') {
+            data.amount = document.getElementById('deadline-amount').value;
+        } 
+        if (type === 'custom' || type === 'tutoring') {
+            data.title = document.getElementById('deadline-title').value;
+        }
+
+        addDeadlineToClient(clientId, type, data);
+        hideDeadlineModal();
+        renderClientDetail(clientId);
+        renderDashboard();
+        showNotification('Scadenza aggiunta!');
+    });
+    document.getElementById('cancel-modal-btn').addEventListener('click', hideDeadlineModal);
+    
+    // ----------------------------------------------------------------
+    // ESPOSIZIONE FUNZIONI GLOBALI e INIZIALIZZAZIONE
+    // ----------------------------------------------------------------
+    window.app = {
+        viewClient: (clientId) => renderClientDetail(clientId),
+        editClient: (clientId) => renderClientForm(getClient(clientId)),
+        confirmDeleteClient: (clientId) => {
+            showConfirmModal('Sei sicuro di voler eliminare questo cliente e tutte le sue scadenze?', () => {
+                deleteClient(clientId);
+                navigateTo('clients-view');
+                renderClientFilters();
+                renderClientList();
+                renderDashboard();
+                showNotification('Cliente eliminato.', true);
+            });
+        },
+        openDeadlineModal: showDeadlineModal,
+        removeDeadline: (clientId, type, deadlineId) => {
+            showConfirmModal('Sei sicuro di voler eliminare questa scadenza?', () => {
+                 removeDeadlineFromClient(clientId, type, deadlineId);
+                 renderClientDetail(clientId);
+                 renderDashboard();
+                 showNotification('Scadenza eliminata.', true);
+            });
+        },
+        filterClients: (category) => {
+            state.clientFilter = category;
+            renderClientFilters();
+            renderClientList();
+        },
+        updateDeadlineStatus: (clientId, deadlineId, newStatus) => {
+            updateTutoringDeadlineStatus(clientId, deadlineId, newStatus);
+            renderClientDetail(clientId);
+            showNotification('Stato scadenza aggiornato!');
+        }
+    };
+    
+    function init() {
+        loadData();
+        renderDashboard();
+        document.getElementById('nav-dashboard').classList.add('bg-sky-100', 'text-sky-700');
+    }
+
+    init();
+});
+</script>
+</body>
+</html>
+
